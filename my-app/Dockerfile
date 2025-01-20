@@ -1,17 +1,26 @@
 # Build the client app
 FROM node:18 as build-stage
 WORKDIR /app
-COPY client ./client
+# Copy package.json first to leverage caching
 COPY client/package.json ./client/
-RUN cd client && npm install && npm run build
+# Install client dependencies
+RUN cd client && npm install
+# Copy the rest of the client files and build
+COPY client ./client
+RUN cd client && npm run build
 
 # Set up the Node.js server
 FROM node:18 as production-stage
 WORKDIR /app
-COPY server ./server
+# Set the environment to production
+ENV NODE_ENV=production
+# Copy server package.json and install dependencies
 COPY server/package.json ./server/
-COPY --from=build-stage /app/client/build ./server/public
 RUN cd server && npm install
+# Copy the server files
+COPY server ./server
+# Copy the built client files to the public folder
+COPY --from=build-stage /app/client/build ./server/public
 
 # Expose the server port
 EXPOSE 3000
