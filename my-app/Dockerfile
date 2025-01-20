@@ -1,27 +1,20 @@
-# Use Node.js base image
-FROM node:18
-
-# Set working directory
+# Build the client app
+FROM node:18 as build-stage
 WORKDIR /app
+COPY client ./client
+COPY client/package.json ./client/
+RUN cd client && npm install && npm run build
 
-# Copy package files
-COPY package*.json ./
-COPY client/package*.json ./client/
-COPY server/package*.json ./server/
-
-# Install dependencies
-RUN npm install
-RUN cd client && npm install
+# Set up the Node.js server
+FROM node:18 as production-stage
+WORKDIR /app
+COPY server ./server
+COPY server/package.json ./server/
+COPY --from=build-stage /app/client/build ./server/public
 RUN cd server && npm install
 
-# Copy app source
-COPY . .
-
-# Build React app
-RUN cd client && npm run build
-
-# Expose port
+# Expose the server port
 EXPOSE 3000
 
-# Start command
-CMD ["npm", "start"]
+# Start the server
+CMD ["node", "server/index.js"]
