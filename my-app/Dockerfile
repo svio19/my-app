@@ -2,7 +2,7 @@ FROM node:18-alpine
 
 WORKDIR /app
 
-# Copy package files
+# Copy root package.json
 COPY package*.json ./
 COPY server/package*.json ./server/
 
@@ -10,14 +10,14 @@ COPY server/package*.json ./server/
 RUN npm install
 RUN cd server && npm install
 
-# Copy source code
+# Copy all source files
 COPY . .
 
 # Build React app
 RUN npm run build
 
-# Expose port
+# Expose port for server
 EXPOSE 3001
 
-# Start command
+# Start server
 CMD ["npm", "start"]
