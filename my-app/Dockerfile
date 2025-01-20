@@ -1,23 +1,27 @@
-FROM node:18-alpine
+# Use Node.js base image
+FROM node:18
 
+# Set working directory
 WORKDIR /app
 
-# Copy root package.json
+# Copy package files
 COPY package*.json ./
+COPY client/package*.json ./client/
 COPY server/package*.json ./server/
 
 # Install dependencies
 RUN npm install
+RUN cd client && npm install
 RUN cd server && npm install
 
-# Copy all source files
+# Copy app source
 COPY . .
 
 # Build React app
-RUN npm run build
+RUN cd client && npm run build
 
-# Expose port for server
+# Expose port
 EXPOSE 3000
 
-# Start server
+# Start command
 CMD ["npm", "start"]
